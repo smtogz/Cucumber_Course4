@@ -21,6 +21,7 @@ public class GWD {
     public static void setThreadBrowserName(String browserName) {
         GWD.threadBrowserName.set(browserName);
     }
+
     public static String getThreadBrowserName() {
         return GWD.threadBrowserName.get();
     }
@@ -28,7 +29,7 @@ public class GWD {
     public static WebDriver getDriver() {
         Logger.getLogger("").setLevel(Level.SEVERE);
         System.setProperty(org.slf4j.simple.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "Error");
-        if (threadBrowserName.get()==null){
+        if (threadBrowserName.get() == null) {
             threadBrowserName.set("chrome");
         }
         if (threadDriver.get() == null) {
@@ -43,21 +44,29 @@ public class GWD {
                     threadDriver.set(new SafariDriver());
                     break;
                 case "edge":
-                    System.setProperty(EdgeDriverService.EDGE_DRIVER_ALLOWED_IPS_PROPERTY,"true");
+                    System.setProperty(EdgeDriverService.EDGE_DRIVER_ALLOWED_IPS_PROPERTY, "true");
                     WebDriverManager.edgedriver().setup();
                     threadDriver.set(new EdgeDriver());
                     break;
                 default:
                     System.setProperty(ChromeDriverService.CHROME_DRIVER_SILENT_OUTPUT_PROPERTY, "true");
                     WebDriverManager.chromedriver().setup();
-                    // hazfiza da chrome i maximize yapiyoruz
-                    ChromeOptions options = new ChromeOptions();
-                    options.addArguments("--headless", "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--window-size=1400,2400");
-                    threadDriver.set(new ChromeDriver(options));
+                    if (!runningFromIntelliJ()) {
+                        // hazfiza da chrome i maximize yapiyoruz
+                        ChromeOptions options = new ChromeOptions();
+                        options.addArguments("--headless", "--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu", "--window-size=1400,2400");
+                        threadDriver.set(new ChromeDriver(options));
+                    } else
+                        threadDriver.set(new ChromeDriver());
             }
         }
         threadDriver.get().manage().window().maximize();
         return threadDriver.get();
+    }
+
+    public static boolean runningFromIntelliJ() {
+        String classPath = System.getProperty("java.class.path");
+        return classPath.contains("idea_rt.jar");
     }
 
     public static void quitDriver() {
